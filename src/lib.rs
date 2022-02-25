@@ -1,13 +1,30 @@
 use std::{fs, collections::BTreeMap};
 
-pub fn load(input: &str) -> Option<VariableMap> {
-    match fs::read_to_string(input) {
+/// Convenience function for `get_variable_map`. This reads the contents of the file given and parses into the variable map.
+/// If contents of file could not be read, this returns `None`.
+pub fn load(file_path: &str) -> Option<VariableMap> {
+    match fs::read_to_string(file_path) {
         Ok(contents) => Some(get_variable_map(contents)),
         Err(_) => None,
     }
 }
 
-fn get_variable_map(contents: String) -> VariableMap {
+
+/// Parses the contents into a variable map.
+/// 
+/// The contents are separated into lines, and each line is checked for a pair. 
+/// The key and the value of a pair are separated by the first appearance of '='.
+/// Lines without any appearance of '=' are ignored.
+/// ## Example
+/// ``` rust
+/// let contents = "abc = 123\nijk = lmnop";
+/// let varmap = cfg_loader::get_variable_map(contents.to_string());
+/// let first = varmap.get_val("abc").unwrap();
+/// let second = varmap.get_val("ijk").unwrap();
+/// assert_eq!(first, "123");
+/// assert_eq!(second, "lmnop");
+/// ```
+pub fn get_variable_map(contents: String) -> VariableMap {
     let lines = contents
         .split('\n')
         .collect::<Vec<&str>>();
@@ -31,9 +48,7 @@ pub struct VariableMap(BTreeMap<String, String>);
 
 impl VariableMap {
     pub fn get_val(&self, name: &str) -> Option<&str> {
-        let op = self.0.get(name);
-
-        match op {
+        match self.0.get(name) {
             Some(val) => Some(val),
             None => None,
         }
